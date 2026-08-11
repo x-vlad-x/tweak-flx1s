@@ -1,0 +1,3 @@
+include README.md
+recursive-include src/tweak_flx1s *.css
+recursive-include data *

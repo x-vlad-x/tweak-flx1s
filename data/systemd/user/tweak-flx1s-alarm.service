@@ -1,0 +1,13 @@
+[Unit]
+Description=Tweak-FLX1s Alarm Volume Fix
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/tweak-flx1s --monitor alarm
+# always: the monitor exits cleanly (code 0) when the dbus-monitor stream
+# ends, and on-failure would leave the alarm fix dead until reboot.
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

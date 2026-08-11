@@ -1,0 +1,8 @@
+scripts/* usr/bin
+data/applications/io.FuriOS.Tweak-FLX1s.desktop usr/share/applications
+data/icons/hicolor/scalable/apps/io.FuriOS.Tweak-FLX1s.svg usr/share/icons/hicolor/scalable/apps
+data/metainfo/* usr/share/metainfo/
+data/systemd/user/* usr/lib/systemd/user/
+data/share/squeekboard usr/share/tweak-flx1s/
+data/configs/* usr/share/tweak-flx1s/configs/
+data/share/sounds usr/share/tweak-flx1s/

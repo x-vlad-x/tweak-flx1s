@@ -1,0 +1,62 @@
+window {
+    background-color: transparent;
+}
+
+#outer {
+    background-color: @theme_bg_color;
+    border: 1px solid mix(@theme_fg_color, @theme_bg_color, 0.08);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+#scroll {
+    background-color: transparent;
+    border: none;
+}
+
+#inner {
+    background-color: transparent;
+}
+
+#entry {
+    background-color: mix(@theme_fg_color, @theme_bg_color, 0.08);
+    color: @theme_fg_color;
+    border: none;
+    border-radius: 9999px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 24px;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#entry:selected {
+    background-color: @theme_selected_bg_color;
+    color: @theme_selected_fg_color;
+    border: none;
+    border-radius: 9999px;
+    transform: scale(1.02);
+}
+
+#entry:active {
+    background-color: shade(@theme_selected_bg_color, 0.9);
+    transform: scale(0.96);
+}
+
+#text {
+    color: inherit;
+}
+
+#input {
+    background-color: mix(@theme_fg_color, @theme_bg_color, 0.05);
+    border: 1px solid mix(@theme_fg_color, @theme_bg_color, 0.08);
+    border-radius: 9999px;
+    color: @theme_fg_color;
+    padding: 8px 16px;
+    margin-bottom: 12px;
+}
+
+#input:focus {
+    border-color: @theme_selected_bg_color;
+}

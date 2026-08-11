@@ -1,0 +1,12 @@
+[Unit]
+Description=Tweak-FLX1s Data Monitor Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tweak-flx1s --monitor datamonitor
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

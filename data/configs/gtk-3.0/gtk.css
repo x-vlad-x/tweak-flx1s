@@ -1,0 +1,52 @@
+/* squeekboard my just a tweak to my own layout */
+sq_button.small2 {
+    font-size: 0.4em;
+}
+
+phosh-top-panel .phosh-topbar-clock {
+  font-size: 10px;
+}
+
+phosh-top-panel image {
+  -gtk-icon-transform: scale(0.66);
+}
+
+.phosh-wwan-indicator,
+phosh-top-panel .indicators {
+  font-size: 10px;
+}
+
+phosh-top-panel .phosh-topbar-date {
+  font-size: 10px;
+}
+
+#phosh_quick_settings flowboxchild > button.phosh-qs-active {
+    font-size: 10px;
+}
+#phosh_quick_settings flowboxchild > button {
+    font-size: 10px;
+}
+
+.phosh-audio-settings { 
+font-size: 10px;
+}
+
+.phosh-settings-list-box { 
+font-size: 10px;
+}
+.phosh-status-page {  
+font-size: 10px;
+}
+
+phosh-status-page-placeholder > box > label.title {
+  font-size: 10px;
+}
+
+phosh-notification-banner {
+  font-size: 10px;
+  }
+
+.phosh-wwan-indicator,
+phosh-top-panel .indicators {
+  font-size: 10px;
+}

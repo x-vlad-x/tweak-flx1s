@@ -1,0 +1,9 @@
+mode=drun
+allow_images=false
+width=80%
+normal_window=false
+prompt=
+location=center
+hide_search=true
+sort_order=alphabetical
+hide_scroll=true

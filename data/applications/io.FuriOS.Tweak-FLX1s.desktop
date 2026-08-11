@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Tweak-FLX1s
+Comment=Tweak tool for FuriPhone FLX1s
+Exec=tweak-flx1s
+Terminal=false
+Icon=io.FuriOS.Tweak-FLX1s
+Type=Application
+Categories=Utility;Settings;
+Keywords=Settings;Tweak;FuriOS;Phone;

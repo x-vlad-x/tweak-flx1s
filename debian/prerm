@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+
+if [ "$1" = "remove" ]; then
+    TARGET_USER="furios"
+
+    if id "$TARGET_USER" >/dev/null 2>&1; then
+        USER_ID=$(id -u "$TARGET_USER")
+        export XDG_RUNTIME_DIR="/run/user/$USER_ID"
+
+        if [ -d "$XDG_RUNTIME_DIR" ]; then
+            runuser -u "$TARGET_USER" -- systemctl --user stop tweak-flx1s-alarm.service 2>/dev/null || true
+            runuser -u "$TARGET_USER" -- systemctl --user disable tweak-flx1s-alarm.service 2>/dev/null || true
+
+            runuser -u "$TARGET_USER" -- systemctl --user stop tweak-flx1s-gestures.service 2>/dev/null || true
+            runuser -u "$TARGET_USER" -- systemctl --user disable tweak-flx1s-gestures.service 2>/dev/null || true
+
+            runuser -u "$TARGET_USER" -- systemctl --user stop tweak-flx1s-datamonitor.service 2>/dev/null || true
+            runuser -u "$TARGET_USER" -- systemctl --user disable tweak-flx1s-datamonitor.service 2>/dev/null || true
+        fi
+    fi
+fi
+
+#DEBHELPER#

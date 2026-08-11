@@ -1,0 +1,21 @@
+Source: tweak-flx1s
+Section: utils
+Priority: optional
+Maintainer: Alaraajavamma <aki@urheiluaki.fi>
+Build-Depends: debhelper-compat (= 12), python3, dh-python, python3-setuptools,
+               python3-gi, python3-loguru, python3-requests, python3-psutil,
+               pybuild-plugin-pyproject
+Standards-Version: 4.5.0
+
+Package: tweak-flx1s
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends},
+         python3-gi, python3-loguru, python3-requests, python3-psutil,
+         libadwaita-1-0, gir1.2-adw-1,
+         lisgd, wtype, curl, inotify-tools, polkitd, pkexec,
+         gstreamer1.0-tools, gstreamer1.0-plugins-good,
+         alsa-utils, wl-clipboard, git, vnstat,
+         libpam-parallel, libpam-biomd
+Description: Tweaks and tools for FuriOS/Linux Phones
+ Tweak-FLX1s provides tweaks like alarm volume fix and gesture shortcuts,
+ wrapped in a modern GTK4 GUI.

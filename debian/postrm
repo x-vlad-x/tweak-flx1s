@@ -1,0 +1,53 @@
+#!/bin/bash
+# Copyright (C) 2026 Alaraajavamma <aki@urheiluaki.fi>
+# License: GPL-3.0-or-later
+
+set -e
+
+if [ "$1" = "remove" ]; then
+    TARGET_USER="furios"
+
+    if id "$TARGET_USER" >/dev/null 2>&1; then
+        TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
+        USER_ID=$(id -u "$TARGET_USER")
+        export XDG_RUNTIME_DIR="/run/user/$USER_ID"
+
+        echo "Cleaning up Tweak-FLX1s for user $TARGET_USER..."
+
+        echo "Cleaning up broken systemd user service symlinks..."
+        rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-alarm.service"
+        rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-gestures.service"
+        rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-datamonitor.service"
+
+        if [ -d "$XDG_RUNTIME_DIR" ]; then
+             runuser -u "$TARGET_USER" -- systemctl --user daemon-reload 2>/dev/null || true
+        fi
+        systemctl daemon-reload 2>/dev/null || true
+
+        echo "Removing custom components..."
+        rm -rf "$TARGET_HOME/.local/share/squeekboard"
+        rm -rf "$TARGET_HOME/.local/share/sounds"
+        # Only delete gtk.css if it is ours — the user may have written their own.
+        if [ -f "$TARGET_HOME/.config/gtk-3.0/gtk.css" ] && \
+           grep -q "managed by tweak-flx1s" "$TARGET_HOME/.config/gtk-3.0/gtk.css"; then
+            rm -f "$TARGET_HOME/.config/gtk-3.0/gtk.css"
+        fi
+
+        echo "Removing configuration files..."
+        rm -rf "$TARGET_HOME/.config/tweak-flx1s"
+        rm -rf "$TARGET_HOME/.cache/tweak-flx1s"
+
+        echo "Tweak-FLX1s cleanup finished."
+    fi
+
+    echo "Restoring PAM configuration if backups exist..."
+    PAM_FILES=("sudo" "polkit-1" "biomd" "common-password")
+    for file in "${PAM_FILES[@]}"; do
+        if [ -f "/etc/pam.d/${file}.bak" ]; then
+            echo "Restoring /etc/pam.d/${file}..."
+            mv "/etc/pam.d/${file}.bak" "/etc/pam.d/${file}"
+        fi
+    done
+fi
+
+#DEBHELPER#

@@ -1,0 +1,11 @@
+[Unit]
+Description=Tweak-FLX1s Gesture Shortcuts
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/tweak-flx1s --monitor gestures
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

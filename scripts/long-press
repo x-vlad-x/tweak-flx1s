@@ -1,0 +1,5 @@
+#!/bin/bash
+# Copyright (C) 2026 Alaraajavamma <aki@urheiluaki.fi>
+# License: GPL-3.0-or-later
+
+tweak-flx1s --long-press
