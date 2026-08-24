@@ -18,11 +18,13 @@ import shutil
 import subprocess
 import gi
 import threading
+import glob
+import re
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, GLib
 from tweak_flx1s.const import SERVICE_ALARM, SERVICE_GESTURES, SERVICE_DATAMONITOR, APP_NAME
-from tweak_flx1s.utils import run_command, logger
+from tweak_flx1s.utils import run_command, check_dependency, logger
 from tweak_flx1s.system.sounds import SoundManager
 from tweak_flx1s.gui.dialogs import ExecutionDialog
 from tweak_flx1s.gui.weather_dialog import WeatherDialog
@@ -109,12 +111,79 @@ class TweaksPage(Adw.PreferencesPage):
 
     def _get_css_paths(self):
         """Returns (source_path, target_path) for GTK3 CSS."""
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         source = "/usr/share/tweak-flx1s/configs/gtk-3.0/gtk.css"
+        if not os.path.exists(source):
+            source = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data/configs/gtk-3.0/gtk.css"))
         target = os.path.expanduser("~/.config/gtk-3.0/gtk.css")
         return source, target
 
     GTK_CSS_MARKER = "/* managed by tweak-flx1s */"
+
+    def _install_battery_charging_icons(self):
+        """Generates and installs green charging symbolic icons into ~/.local/share/icons."""
+        src_status = "/usr/share/icons/Adwaita/symbolic/status"
+        src_legacy = "/usr/share/icons/Adwaita/symbolic/legacy"
+        if not os.path.exists(src_status):
+            logger.warning(f"Adwaita status icon dir not found at {src_status}")
+            return
+
+        files = (
+            glob.glob(f"{src_status}/battery*charging*.svg") +
+            glob.glob(f"{src_status}/battery-level-100-charged-symbolic.svg")
+        )
+        legacy_files = (
+            glob.glob(f"{src_legacy}/battery*charging*.svg")
+            if os.path.isdir(src_legacy) else []
+        )
+
+        dest_themes = ["Adwaita", "Yaru", "hicolor"]
+        for theme in dest_themes:
+            dest_status_dir = os.path.expanduser(f"~/.local/share/icons/{theme}/symbolic/status")
+            dest_legacy_dir = os.path.expanduser(f"~/.local/share/icons/{theme}/symbolic/legacy")
+            os.makedirs(dest_status_dir, exist_ok=True)
+            os.makedirs(dest_legacy_dir, exist_ok=True)
+
+            for f in files:
+                try:
+                    with open(f, "r", encoding="utf-8") as fp:
+                        content = fp.read()
+                    new_content = re.sub(r"<path(?!\s+class=)", r'<path class="success"', content)
+                    new_content = re.sub(r"<g(?!\s+class=)", r'<g class="success"', new_content)
+                    with open(os.path.join(dest_status_dir, os.path.basename(f)), "w", encoding="utf-8") as fp:
+                        fp.write(new_content)
+                except Exception as e:
+                    logger.error(f"Failed to install {f}: {e}")
+
+            for f in legacy_files:
+                try:
+                    with open(f, "r", encoding="utf-8") as fp:
+                        content = fp.read()
+                    new_content = re.sub(r"<path(?!\s+class=)", r'<path class="success"', content)
+                    new_content = re.sub(r"<g(?!\s+class=)", r'<g class="success"', new_content)
+                    with open(os.path.join(dest_legacy_dir, os.path.basename(f)), "w", encoding="utf-8") as fp:
+                        fp.write(new_content)
+                except Exception as e:
+                    logger.error(f"Failed to install legacy {f}: {e}")
+
+            if check_dependency("gtk-update-icon-cache"):
+                run_command(f"gtk-update-icon-cache -f -q -t ~/.local/share/icons/{theme}", check=False)
+        logger.info("Installed green battery charging icons")
+
+    def _remove_battery_charging_icons(self):
+        """Removes custom green charging symbolic icons from ~/.local/share/icons."""
+        dest_themes = ["Adwaita", "Yaru", "hicolor"]
+        for theme in dest_themes:
+            for subdir in ["status", "legacy"]:
+                dir_path = os.path.expanduser(f"~/.local/share/icons/{theme}/symbolic/{subdir}")
+                if os.path.isdir(dir_path):
+                    for f in glob.glob(f"{dir_path}/battery*charging*.svg") + glob.glob(f"{dir_path}/battery-level-100-charged-symbolic.svg"):
+                        try:
+                            os.remove(f)
+                        except Exception as e:
+                            logger.error(f"Failed to remove {f}: {e}")
+            if check_dependency("gtk-update-icon-cache"):
+                run_command(f"gtk-update-icon-cache -f -q -t ~/.local/share/icons/{theme}", check=False)
+        logger.info("Removed green battery charging icons")
 
     def _is_gtk_tweak_active(self):
         """Checks if OUR custom GTK CSS is applied — a gtk.css the user wrote
@@ -148,6 +217,7 @@ class TweaksPage(Adw.PreferencesPage):
                     css = f.read()
                 with open(target, "w") as f:
                     f.write(f"{self.GTK_CSS_MARKER}\n{css}")
+                self._install_battery_charging_icons()
                 logger.info(f"Applied GTK3 CSS tweak to {target}")
             except Exception as e:
                 logger.error(f"Failed to apply GTK3 CSS tweak: {e}")
@@ -159,6 +229,7 @@ class TweaksPage(Adw.PreferencesPage):
                         logger.info(f"Removed GTK3 CSS tweak from {target}")
                     else:
                         logger.warning(f"{target} was not created by Tweak-FLX1s — leaving it untouched")
+                self._remove_battery_charging_icons()
             except Exception as e:
                 logger.error(f"Failed to remove GTK3 CSS tweak: {e}")
 

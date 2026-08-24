@@ -27,6 +27,8 @@ if [ "$1" = "remove" ]; then
         echo "Removing custom components..."
         rm -rf "$TARGET_HOME/.local/share/squeekboard"
         rm -rf "$TARGET_HOME/.local/share/sounds"
+        rm -f "$TARGET_HOME/.local/share/icons"/*/symbolic/*/battery*charging*.svg 2>/dev/null || true
+        rm -f "$TARGET_HOME/.local/share/icons"/*/symbolic/*/battery-level-100-charged-symbolic.svg 2>/dev/null || true
         # Only delete gtk.css if it is ours — the user may have written their own.
         if [ -f "$TARGET_HOME/.config/gtk-3.0/gtk.css" ] && \
            grep -q "managed by tweak-flx1s" "$TARGET_HOME/.config/gtk-3.0/gtk.css"; then

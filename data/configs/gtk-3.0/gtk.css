@@ -50,3 +50,8 @@ phosh-notification-banner {
 phosh-top-panel .indicators {
   font-size: 10px;
 }
+
+/* Green battery charging indicator */
+phosh-battery-info image {
+  -gtk-icon-palette: success #33d17a, default #ffffff;
+}
