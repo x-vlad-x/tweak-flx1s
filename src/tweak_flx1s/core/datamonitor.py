@@ -81,13 +81,24 @@ class DataMonitor:
         Returns a dict with 'daily', 'weekly', 'monthly' usage in MB summed
         across all ccmni* interfaces (vnstat only tracks ccmni*; ril_0 is
         the NetworkManager-side device and is not counted here).
+
+        Asks vnstat for the last 31 days and the current month only: the
+        bare --json dumps the whole database including the five-minute
+        history, which grows past megabytes on a phone that stays up, and
+        parsing it on every periodic check made this daemon the biggest
+        CPU and RAM consumer in the house.
         """
-        output = run_command("vnstat --json", check=False)
+        output = run_command("vnstat --json d 31", check=False)
+        month_output = run_command("vnstat --json m 1", check=False)
         if not output:
             return None
 
         try:
             data = json.loads(output)
+            month_data = json.loads(month_output) if month_output else {}
+            month_by_iface = {}
+            for iface_data in month_data.get("interfaces", []):
+                month_by_iface[iface_data.get("name", "")] = iface_data
             interfaces = data.get("interfaces", [])
             if not interfaces:
                 return None
@@ -116,7 +127,8 @@ class DataMonitor:
 
                 monthly_rx = 0
                 monthly_tx = 0
-                for month in traffic.get("month", []):
+                month_traffic = month_by_iface.get(name, {}).get("traffic", {})
+                for month in month_traffic.get("month", []):
                     m_date = month.get("date", {})
                     if m_date.get("year") == now.year and m_date.get("month") == now.month:
                         monthly_rx = month.get("rx", 0)
