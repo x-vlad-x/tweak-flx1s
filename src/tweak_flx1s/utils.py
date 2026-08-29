@@ -16,7 +16,6 @@
 import sys
 import shutil
 import subprocess
-import gi
 from loguru import logger
 from tweak_flx1s.const import APP_ID
 
@@ -101,6 +100,7 @@ def send_notification(title, body="", icon_name="dialog-information", id=None, u
     urgent=True raises the priority so it alerts more insistently.
     """
     try:
+        import gi
         gi.require_version('Gio', '2.0')
         from gi.repository import Gio
 
@@ -128,6 +128,7 @@ def clear_notification(notification_id):
     Withdraws a notification by ID.
     """
     try:
+        import gi
         gi.require_version('Gio', '2.0')
         from gi.repository import Gio
 

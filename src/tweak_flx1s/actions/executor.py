@@ -20,6 +20,7 @@ import threading
 import time
 from gi.repository import GLib, Gio
 from tweak_flx1s.utils import logger, run_command
+from tweak_flx1s.const import CACHE_DIR
 
 
 def _login1_session_prop(bus, path, prop):
@@ -135,6 +136,80 @@ def is_wofi_running():
     except subprocess.CalledProcessError:
         return False
 
+# Wofi is a layer-shell menu that must only ever have one instance, so all
+# running-instance checks are global (any wofi, not just ours). A press that
+# lands within this window of our own launch is the user re-pressing because
+# the menu hadn't appeared yet — ignore it instead of closing the menu.
+WOFI_LAUNCH_GRACE = 0.7
+_WOFI_STAMP = os.path.join(CACHE_DIR, "wofi.launched")
+
+def _mark_wofi_launched():
+    """Stamps the moment we spawned wofi (for the grace window)."""
+    try:
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        with open(_WOFI_STAMP, "w") as f:
+            f.write(str(time.time()))
+    except Exception as e:
+        logger.warning(f"Failed to write wofi launch stamp: {e}")
+
+def wofi_recently_launched():
+    """True if our wofi was spawned less than WOFI_LAUNCH_GRACE ago."""
+    try:
+        with open(_WOFI_STAMP) as f:
+            return (time.time() - float(f.read())) < WOFI_LAUNCH_GRACE
+    except Exception:
+        return False
+
+_SCREEN_CACHE = os.path.join(CACHE_DIR, "wofi.screen")
+
+def _query_screen_logical():
+    """Asks GDK for the logical (scale-adjusted) screen size in pixels."""
+    try:
+        import gi
+        gi.require_version('Gdk', '3.0')
+        from gi.repository import Gdk
+        display = Gdk.Display.get_default()
+        if display:
+            geo = display.get_monitor(0).get_geometry()
+            if geo.width > 0 and geo.height > 0:
+                return geo.width, geo.height
+    except Exception as e:
+        logger.warning(f"Failed to query screen size via GDK: {e}")
+    return None
+
+def _refresh_screen_cache():
+    """Re-queries the screen size and stores it for the next launch."""
+    size = _query_screen_logical()
+    if size:
+        try:
+            os.makedirs(CACHE_DIR, exist_ok=True)
+            with open(_SCREEN_CACHE, "w") as f:
+                f.write(f"{size[0]} {size[1]}")
+        except Exception:
+            pass
+
+def _screen_logical():
+    """Logical screen size for menu sizing. Reads the cached value so the
+    press path stays fast; falls back to a live GDK query on first use and
+    to the FLX1s portrait defaults if that fails too."""
+    try:
+        with open(_SCREEN_CACHE) as f:
+            w, h = (int(v) for v in f.read().split())
+            if w > 0 and h > 0:
+                return w, h
+    except Exception:
+        pass
+    size = _query_screen_logical()
+    if size:
+        _refresh_screen_cache()
+        return size
+    return 360, 804
+
+def confirm_wofi_selection():
+    """Presses Return in the open wofi menu to activate the selected option."""
+    logger.info("Wofi is already running, simulating Return key.")
+    subprocess.run(["wtype", "-k", "Return"], check=False)
+
 def execute_command(cmd):
     """Executes a shell command in background."""
     if cmd:
@@ -179,8 +254,10 @@ def is_overview_active():
 def show_wofi_menu(items):
     """Shows a wofi menu with given items."""
     if is_wofi_running():
-        logger.info("Wofi is already running, simulating Return key.")
-        subprocess.run(["wtype", "-P", "return", "-p", "return"], check=False)
+        if wofi_recently_launched():
+            logger.info("Wofi is still starting up, ignoring repeated press.")
+        else:
+            confirm_wofi_selection()
         return
 
     if is_overview_active():
@@ -191,7 +268,7 @@ def show_wofi_menu(items):
 
     try:
         from tweak_flx1s.system.wofi import WofiManager
-        WofiManager().generate_dynamic_style()
+        WofiManager().ensure_config_exists()
     except Exception as e:
         logger.error(f"Failed to regenerate dynamic wofi stylesheet: {e}")
 
@@ -215,8 +292,25 @@ def show_wofi_menu(items):
 
     logger.info("Opening Wofi menu")
     try:
+        _mark_wofi_launched()
+        # Not --lines: wofi's line-height math breaks with the styled entries
+        # (it requests a 64px surface no matter the count), so size the
+        # surface ourselves — ~60 logical px per styled row plus panel chrome.
+        # Both sizes are given in pixels, never percentages: wofi maps the
+        # surface before resolving "%" against the output (the number is used
+        # as raw pixels for the first frame), which flashes a mis-sized menu.
+        # Content is 50px per row (42 pill + 8 gap) plus the 16px hidden
+        # search input; the stylesheet strips GTK's invisible shadow margin,
+        # so wofi maps at exactly this size and the compositor centers it.
+        screen_w, screen_h = _screen_logical()
+        menu_width = round(screen_w * 0.8)
+        # +40 = 16px hidden input above the pills and a 24px tail that biases
+        # the stack up to cancel Phosh's usable-area centering sitting ~8px
+        # below true screen center: pills land dead center (measured -0.2px).
+        menu_height = min(50 * close_idx + 40, screen_h - 60)
         process = subprocess.Popen(
-            ["wofi", "-d", "--prompt", "Select an option:", "--lines", str(close_idx)],
+            ["wofi", "-d", "--prompt", "Select an option:",
+             "--width", str(menu_width), "--height", str(menu_height)],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -236,6 +330,9 @@ def show_wofi_menu(items):
             threading.Thread(target=monitor_overview, args=(process,), daemon=True).start()
 
         stdout, stderr = process.communicate(input=wofi_input)
+
+        # Off the critical path: pick up display scale changes for next time.
+        _refresh_screen_cache()
 
         selection = stdout.strip()
         logger.info(f"User selected: {selection}")

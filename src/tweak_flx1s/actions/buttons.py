@@ -16,9 +16,11 @@
 import os
 import json
 from loguru import logger
-from tweak_flx1s.utils import run_command
 from tweak_flx1s.const import CONFIG_DIR, HOME_DIR
-from tweak_flx1s.actions.executor import is_locked, is_wofi_running, execute_command, show_wofi_menu
+from tweak_flx1s.actions.executor import (
+    is_locked, is_wofi_running, wofi_recently_launched, confirm_wofi_selection,
+    execute_command, show_wofi_menu,
+)
 
 CONFIG_FILE = os.path.join(CONFIG_DIR, "buttons.json")
 ASSISTANT_BUTTON_DIR = os.path.join(HOME_DIR, ".config", "assistant-button")
@@ -131,8 +133,10 @@ class ButtonManager:
         logger.info(f"Handling button press: {press_type}")
 
         if press_type == "short_press" and is_wofi_running():
-            logger.info("Wofi is running, simulating Enter key.")
-            run_command("wtype -k Return", check=False)
+            if wofi_recently_launched():
+                logger.info("Wofi is still starting up, ignoring repeated press.")
+            else:
+                confirm_wofi_selection()
             return
 
         locked = is_locked()
