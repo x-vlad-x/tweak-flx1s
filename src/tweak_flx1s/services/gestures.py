@@ -15,6 +15,7 @@
 
 import os
 import signal
+import sys
 import shutil
 import gi
 from gi.repository import GLib, Gio
@@ -38,9 +39,18 @@ class GestureMonitor:
         self.manager = GesturesManager()
         self.loop = GLib.MainLoop()
         self.cancellable = Gio.Cancellable()
+        self.lisgd_failed = False
 
     def start(self):
-        """Starts the lisgd process with configured gestures."""
+        """Starts the lisgd process with configured gestures.
+
+        Exits nonzero when lisgd failed, so systemd's Restart=on-failure
+        actually restarts us: at boot this service can win the race
+        against the session environment import, and lisgd dies for the
+        missing WAYLAND_DISPLAY; a retry five seconds later finds the
+        session up. Exiting 0 on that path silently disabled gestures
+        for the whole session.
+        """
         if not self.manager.config.get("enabled", False):
             logger.info("Gestures are disabled in config.")
             return
@@ -54,6 +64,9 @@ class GestureMonitor:
             self.loop.run()
         except KeyboardInterrupt:
             self._on_quit()
+
+        if self.lisgd_failed:
+            sys.exit(1)
 
     def _start_lisgd(self):
         logger.info(f"Starting lisgd on {self.device}")
@@ -97,6 +110,7 @@ class GestureMonitor:
         except GLib.Error as e:
             if e.code != Gio.IOErrorEnum.CANCELLED:
                  logger.error(f"lisgd exited with error: {e}")
+                 self.lisgd_failed = True
         finally:
             self._on_quit()
 
