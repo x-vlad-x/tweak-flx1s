@@ -14,17 +14,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import subprocess
-from tweak_flx1s.utils import logger, run_command, get_device_model, is_package_installed
+from tweak_flx1s.utils import logger, run_command, is_package_installed
 
 STAGING_PACKAGES = [
     "furios-apt-config-staging",
     "furios-apt-config-debian-staging",
     "furios-apt-config-sync-staging",
 ]
-
-DEVICE_STAGING_PACKAGES = {
-    "FuriPhoneFLX1": "furios-apt-config-krypton-staging",
-}
 
 
 class PackageManager:
@@ -37,24 +33,10 @@ class PackageManager:
                 return False
         return True
 
-    def staging_packages(self):
-        """Return the staging packages this device has.
-
-        Only krypton ships a device named apt config; radon has none, so
-        asking for one leaves apt unable to locate the package and the
-        switch stops half done. The sync package every device shares is
-        what the krypton one pulls in anyway.
-        """
-        packages = list(STAGING_PACKAGES)
-        device_package = DEVICE_STAGING_PACKAGES.get(get_device_model())
-        if device_package:
-            packages.append(device_package)
-        return packages
-
     def switch_to_staging(self):
         """Returns command to switch to staging repositories."""
         cmd = (
-            f"sudo apt install {' '.join(self.staging_packages())} -y && "
+            f"sudo apt install {' '.join(STAGING_PACKAGES)} -y && "
             "sudo furios-update-system"
         )
         return self._run_in_terminal(cmd)
@@ -62,7 +44,7 @@ class PackageManager:
     def switch_to_production(self):
         """Returns command to switch to production repositories."""
         cmd = (
-            f"sudo apt remove {' '.join(self.staging_packages())} -y && "
+            f"sudo apt remove {' '.join(STAGING_PACKAGES)} -y && "
             "sudo furios-update-system"
         )
         return self._run_in_terminal(cmd)
