@@ -290,6 +290,7 @@ class SystemPage(Adw.PreferencesPage):
 
     def _refresh_squeekboard_ui(self):
         try:
+            self.kbd_mgr.drop_orphan_override()
             installed = self.kbd_mgr.check_squeekboard_installed()
             if installed:
                 self.sq_btn.set_label("Remove")

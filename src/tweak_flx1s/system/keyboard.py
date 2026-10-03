@@ -24,6 +24,7 @@ class KeyboardManager:
 
     def __init__(self):
         self.SQUEEKBOARD_DIR = os.path.join(HOME_DIR, ".local/share/squeekboard")
+        self.OSK_OVERRIDE = os.path.join(HOME_DIR, ".config/systemd/user/mobi.phosh.OSK.service")
         self.APP_SHARE_DIR = "/usr/share/tweak-flx1s"
         if not os.path.exists(self.APP_SHARE_DIR):
              self.APP_SHARE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data/share"))
@@ -125,10 +126,33 @@ class KeyboardManager:
         logger.info(f"Preparing command to set keyboard to {path}")
         return f"update-alternatives --set Phosh-OSK {path}"
 
+    def drop_orphan_override(self):
+        """Remove the Squeekboard override when Squeekboard is gone.
+
+        Squeekboard ships no systemd unit of its own, so starting it
+        needs an override in the user's own systemd directory. A user
+        unit shadows the one update-alternatives maintains, which is
+        where every other keyboard is started from, so an override left
+        behind by a Squeekboard that is no longer installed keeps the
+        chosen keyboard from ever starting.
+        """
+        if not os.path.exists(self.OSK_OVERRIDE):
+            return False
+        if self.check_squeekboard_installed():
+            return False
+        try:
+            logger.warning("Dropping Squeekboard OSK override left behind without Squeekboard.")
+            os.remove(self.OSK_OVERRIDE)
+            run_command("systemctl --user daemon-reload", check=False)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to drop orphan OSK override: {e}")
+            return False
+
     def configure_osk_service(self, keyboard_path):
         """Creates or removes the Squeekboard user service override based on the selected keyboard."""
         user_systemd_dir = os.path.join(HOME_DIR, ".config/systemd/user")
-        service_file = os.path.join(user_systemd_dir, "mobi.phosh.OSK.service")
+        service_file = self.OSK_OVERRIDE
 
         try:
             if "squeekboard" in keyboard_path:
