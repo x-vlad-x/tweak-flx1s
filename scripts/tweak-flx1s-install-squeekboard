@@ -1,0 +1,55 @@
+#!/bin/bash
+# Install squeekboard, working around its hold on the GTK3 gnome-desktop
+# library. squeekboard links libgnome-desktop-3.so.20, and the only
+# package offering it caps gnome-desktop3-data below 45 while FuriOS
+# ships a far newer one, so apt cannot satisfy it. The library itself
+# runs fine against the newer data for what squeekboard asks of it: xkb
+# layout names, which come from libxkbregistry. Relaxing that one cap in
+# a local rebuild keeps apt's own state consistent, where forcing the
+# install would leave every later apt run offering to undo it.
+set -u
+
+LIB=libgnome-desktop-3-20t64
+WORK=$(mktemp -d /tmp/squeekboard-install.XXXXXX)
+trap 'rm -rf "$WORK"' EXIT
+
+echo "Installing squeekboard..."
+if apt-get install -y squeekboard; then
+    echo "Installed."
+    exit 0
+fi
+
+echo
+echo "apt could not satisfy squeekboard. Checking for the known gnome-desktop conflict..."
+if ! apt-cache depends squeekboard 2>/dev/null | grep -q "$LIB"; then
+    echo "squeekboard does not depend on $LIB; this is a different problem." >&2
+    exit 1
+fi
+
+cd "$WORK" || exit 1
+echo "Rebuilding $LIB without its gnome-desktop3-data ceiling..."
+if ! apt-get download "$LIB"; then
+    echo "Could not download $LIB." >&2
+    exit 1
+fi
+
+if ! dpkg-deb -R "$LIB"_*.deb unpacked; then
+    echo "Could not unpack $LIB." >&2
+    exit 1
+fi
+
+sed -i -E 's/gnome-desktop3-data \([^)]*\), ?//g' unpacked/DEBIAN/control
+sed -i -E 's/^Version: (.*)$/Version: \1+tweakflx1s1/' unpacked/DEBIAN/control
+
+if ! dpkg-deb -b unpacked relaxed.deb; then
+    echo "Could not rebuild $LIB." >&2
+    exit 1
+fi
+
+echo "Installing the rebuilt library and squeekboard..."
+if ! apt-get install -y ./relaxed.deb squeekboard; then
+    echo "Install still failed. Nothing was forced, so apt is unchanged." >&2
+    exit 1
+fi
+
+echo "Installed."

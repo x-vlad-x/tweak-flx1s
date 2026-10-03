@@ -46,8 +46,15 @@ class KeyboardManager:
             return False
 
     def get_install_cmd(self):
-        """Returns command to install squeekboard."""
-        return "apt install -y squeekboard"
+        """Returns command to install squeekboard.
+
+        A helper carries this rather than apt alone, because squeekboard
+        wants a gnome-desktop library whose only package caps
+        gnome-desktop3-data below what FuriOS ships. The helper installs
+        the plain way first and only rebuilds the library when apt says
+        it cannot.
+        """
+        return "tweak-flx1s-install-squeekboard"
 
     def get_remove_cmd(self):
         """Returns command to remove squeekboard and reset alternative."""
