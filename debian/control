@@ -11,7 +11,7 @@ Package: tweak-flx1s
 Architecture: all
 Depends: ${python3:Depends}, ${misc:Depends},
          python3-gi, python3-loguru, python3-requests, python3-psutil,
-         libadwaita-1-0, gir1.2-adw-1,
+         libadwaita-1-0 (>= 1.6), gir1.2-adw-1 (>= 1.6),
          lisgd, wtype, curl, inotify-tools, polkitd, pkexec,
          gstreamer1.0-tools, gstreamer1.0-plugins-good,
          alsa-utils, wl-clipboard, git, vnstat,

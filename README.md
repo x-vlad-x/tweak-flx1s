@@ -41,6 +41,10 @@ Customize the look, feel, and background behavior of your device.
     *   **GTK3 CSS Tweak:** Apply custom UI tweaks which will prevent Phosh top-panel icons go over the display. This is also needed if you use my custom finnish layout for Squeekboard.
 *   **Background Services:**
     *   **Alarm Volume Fix:** Ensures that the alarm clock plays at full volume and wakes up the device even if it is muted.
+    *   **Offline Pause and Power Tools:** Pause selected user apps during confirmed
+        internet outages, resume them on reconnection or screen wake, and inspect
+        power settings, background services and account synchronization. Opt-in;
+        see [configuration, migration and tests](docs/power-tools.md).
     *   **Mobile Data Monitor:** Monitor mobile data usage on `ril_0` using the `vnstat` daemon. Allows setting daily, weekly, or monthly limits, configuring actions (notify or disable connection) when limits are exceeded, and toggling a temporary bypass.
 *   **Audio:**
     *   **Custom Sound Theme:** Enable the "fastflx1" custom sound theme. This changes the default alarm-clock sound and removes volume-changing sound (blob-blob).
@@ -61,7 +65,8 @@ Configure hardware buttons and touch gestures for quick access to functions.
 
 The application supports command-line arguments for triggers and background services:
 
-*   `--monitor [alarm|gestures]`: Start a background monitor service.
+*   `--monitor [alarm|gestures|datamonitor|offline-pause]`: Start a background monitor service.
+*   `--resume-offline-apps`: Recover only apps recorded by offline pause.
 *   `--action [screenshot|flashlight|kill-window|paste]`: Perform a one-off action.
 *   `--trigger-gesture [index]`: Trigger a specific gesture action.
 *   `--[short|double|long]-press`: Handle button press events.

@@ -29,6 +29,7 @@ from tweak_flx1s.system.sounds import SoundManager
 from tweak_flx1s.gui.dialogs import ExecutionDialog
 from tweak_flx1s.gui.weather_dialog import WeatherDialog
 from tweak_flx1s.core.datamonitor import DataMonitor
+from tweak_flx1s.const import SERVICE_OFFLINE_PAUSE
 
 class BypassDialog(Adw.MessageDialog):
     def __init__(self, parent, callback):
@@ -97,6 +98,17 @@ class TweaksPage(Adw.PreferencesPage):
         self.add(svc_group)
 
         self._add_service_row(svc_group, "Alarm Volume Fix", "Ensure alarm plays at full volume", SERVICE_ALARM)
+
+        self._add_service_row(svc_group, "Offline Pause", "Pause selected apps when internet is unavailable", SERVICE_OFFLINE_PAUSE)
+        power_row = Adw.ActionRow(title="Offline Pause and Power Tools",
+                                  subtitle="Apps, background services and account synchronization")
+        power_button = Gtk.Button(label="Configure", valign=Gtk.Align.CENTER)
+        def open_power_tools(button):
+            from tweak_flx1s.gui.offline_pause.dialog import OfflinePauseDialog
+            OfflinePauseDialog(self.window).present()
+        power_button.connect("clicked", open_power_tools)
+        power_row.add_suffix(power_button)
+        svc_group.add(power_row)
 
 
         self._build_datamonitor_section()

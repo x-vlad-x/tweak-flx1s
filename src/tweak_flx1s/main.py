@@ -23,6 +23,8 @@ def main():
     parser = argparse.ArgumentParser(description="Tweak-FLX1s")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--monitor", help="Start a monitor service")
+    parser.add_argument("--resume-offline-apps", action="store_true",
+                        help="Resume apps recorded by the offline pause service")
     parser.add_argument("--action", help="Perform a one-off action")
     parser.add_argument("--user", help="Specify target user (for system services)")
     parser.add_argument("--trigger-gesture", help="Trigger a configured gesture by index")
@@ -33,6 +35,10 @@ def main():
 
     args, unknown = parser.parse_known_args()
     setup_logging(debug=args.debug)
+
+    if args.resume_offline_apps:
+        from tweak_flx1s.core.offline_pause.daemon import main as offline_main
+        return offline_main(["--resume-all"])
 
     if args.trigger_gesture is not None:
         from tweak_flx1s.actions.gestures import GesturesManager
@@ -64,6 +70,9 @@ def main():
         elif args.monitor == "datamonitor":
              from tweak_flx1s.services.datamonitor import run
              run()
+        elif args.monitor == "offline-pause":
+             from tweak_flx1s.core.offline_pause.daemon import main as offline_main
+             offline_main()
         return
 
     if args.action:

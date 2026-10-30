@@ -18,6 +18,7 @@ if [ "$1" = "remove" ]; then
         rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-alarm.service"
         rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-gestures.service"
         rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-datamonitor.service"
+        rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-offline-pause.service"
 
         if [ -d "$XDG_RUNTIME_DIR" ]; then
              runuser -u "$TARGET_USER" -- systemctl --user daemon-reload 2>/dev/null || true
@@ -38,6 +39,7 @@ if [ "$1" = "remove" ]; then
         echo "Removing configuration files..."
         rm -rf "$TARGET_HOME/.config/tweak-flx1s"
         rm -rf "$TARGET_HOME/.cache/tweak-flx1s"
+        rm -rf "$TARGET_HOME/.local/state/tweak-flx1s"
 
         echo "Tweak-FLX1s cleanup finished."
     fi

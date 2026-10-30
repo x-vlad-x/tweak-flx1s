@@ -1,0 +1,14 @@
+[Unit]
+Description=Pause selected apps while the phone is offline
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/tweak-flx1s --monitor offline-pause
+ExecStopPost=/usr/bin/tweak-flx1s --resume-offline-apps
+Restart=on-failure
+RestartSec=5
+RestartPreventExitStatus=78
+UMask=0077
+
+[Install]
+WantedBy=default.target

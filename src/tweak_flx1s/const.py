@@ -25,5 +25,6 @@ CACHE_DIR = os.path.join(HOME_DIR, ".cache", "tweak-flx1s")
 SERVICE_ALARM = "tweak-flx1s-alarm.service"
 SERVICE_GESTURES = "tweak-flx1s-gestures.service"
 SERVICE_DATAMONITOR = "tweak-flx1s-datamonitor.service"
+SERVICE_OFFLINE_PAUSE = "tweak-flx1s-offline-pause.service"
 
 ICON_APP = "io.FuriOS.Tweak-FLX1s"
