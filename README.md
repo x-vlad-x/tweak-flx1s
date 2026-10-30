@@ -9,6 +9,11 @@ The application is organized into three main tabs:
 ### 1. System
 Manage core system components, packages, and security settings.
 
+*   **Android Background Activity:** Search installed Andromeda apps and open
+    Android's native battery policy screen (Unrestricted, Optimized, Restricted).
+    Android must be running. This does not change app policies automatically or
+    install a background service.
+
 *   **Keyboard Management:**
     *   Switch between **Squeekboard** and **Phosh-OSK**.
     *   Install a custom **Finnish Layout** for Squeekboard.

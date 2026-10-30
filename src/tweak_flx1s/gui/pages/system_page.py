@@ -66,6 +66,18 @@ class SystemPage(Adw.PreferencesPage):
 
         self.create_update_btn = create_update_btn
 
+        android_group = Adw.PreferencesGroup(title="Android")
+        self.add(android_group)
+        android_row = Adw.ActionRow(title="Background Activity",
+                                    subtitle="Configure battery use for each Android app")
+        android_button = Gtk.Button(label="Configure", valign=Gtk.Align.CENTER)
+        def open_android(button):
+            from tweak_flx1s.gui.android_dialog import AndroidBackgroundDialog
+            AndroidBackgroundDialog(self.window).present()
+        android_button.connect("clicked", open_android)
+        android_row.add_suffix(android_button)
+        android_group.add(android_row)
+
         def run_pkg_cmd(title, cmd):
             try:
                 logger.info(f"Starting execution dialog: {title}")
