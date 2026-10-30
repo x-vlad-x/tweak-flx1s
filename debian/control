@@ -15,6 +15,7 @@ Depends: ${python3:Depends}, ${misc:Depends},
          lisgd, wtype, curl, inotify-tools, polkitd, pkexec,
          gstreamer1.0-tools, gstreamer1.0-plugins-good,
          alsa-utils, wl-clipboard, git, vnstat,
+         pulseaudio-utils, feedbackd,
          libpam-parallel, libpam-biomd
 Description: Tweaks and tools for FuriOS/Linux Phones
  Tweak-FLX1s provides tweaks like alarm volume fix and gesture shortcuts,

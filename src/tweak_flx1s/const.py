@@ -26,5 +26,6 @@ SERVICE_ALARM = "tweak-flx1s-alarm.service"
 SERVICE_GESTURES = "tweak-flx1s-gestures.service"
 SERVICE_DATAMONITOR = "tweak-flx1s-datamonitor.service"
 SERVICE_OFFLINE_PAUSE = "tweak-flx1s-offline-pause.service"
+SERVICE_RINGTONE = "tweak-flx1s-ringtone.service"
 
 ICON_APP = "io.FuriOS.Tweak-FLX1s"

@@ -47,6 +47,11 @@ Customize the look, feel, and background behavior of your device.
         see [configuration, migration and tests](docs/power-tools.md).
     *   **Mobile Data Monitor:** Monitor mobile data usage on `ril_0` using the `vnstat` daemon. Allows setting daily, weekly, or monthly limits, configuring actions (notify or disable connection) when limits are exceeded, and toggling a temporary bypass.
 *   **Audio:**
+    *   **Independent Ringtone Volume:** Set and preview incoming-call volume
+        independently of media volume. The opt-in service temporarily adjusts
+        the audio sink and compensates other streams, then restores their levels.
+        Master mute and feedbackd profiles still apply. See
+        [ringtone details and migration](docs/ringtone-volume.md).
     *   **Custom Sound Theme:** Enable the "fastflx1" custom sound theme. This changes the default alarm-clock sound and removes volume-changing sound (blob-blob).
 
 ### 3. Actions
@@ -65,8 +70,9 @@ Configure hardware buttons and touch gestures for quick access to functions.
 
 The application supports command-line arguments for triggers and background services:
 
-*   `--monitor [alarm|gestures|datamonitor|offline-pause]`: Start a background monitor service.
+*   `--monitor [alarm|gestures|datamonitor|offline-pause|ringtone]`: Start a background monitor service.
 *   `--resume-offline-apps`: Recover only apps recorded by offline pause.
+*   `--restore-ringtone-volume`: Restore audio levels saved by the ringtone service.
 *   `--action [screenshot|flashlight|kill-window|paste]`: Perform a one-off action.
 *   `--trigger-gesture [index]`: Trigger a specific gesture action.
 *   `--[short|double|long]-press`: Handle button press events.

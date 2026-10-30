@@ -25,6 +25,8 @@ def main():
     parser.add_argument("--monitor", help="Start a monitor service")
     parser.add_argument("--resume-offline-apps", action="store_true",
                         help="Resume apps recorded by the offline pause service")
+    parser.add_argument("--restore-ringtone-volume", action="store_true",
+                        help="Restore audio levels saved by the ringtone service")
     parser.add_argument("--action", help="Perform a one-off action")
     parser.add_argument("--user", help="Specify target user (for system services)")
     parser.add_argument("--trigger-gesture", help="Trigger a configured gesture by index")
@@ -39,6 +41,11 @@ def main():
     if args.resume_offline_apps:
         from tweak_flx1s.core.offline_pause.daemon import main as offline_main
         return offline_main(["--resume-all"])
+
+    if args.restore_ringtone_volume:
+        from tweak_flx1s.services.ringtone import restore
+        restore()
+        return
 
     if args.trigger_gesture is not None:
         from tweak_flx1s.actions.gestures import GesturesManager
@@ -73,6 +80,9 @@ def main():
         elif args.monitor == "offline-pause":
              from tweak_flx1s.core.offline_pause.daemon import main as offline_main
              offline_main()
+        elif args.monitor == "ringtone":
+             from tweak_flx1s.services.ringtone import run
+             run()
         return
 
     if args.action:

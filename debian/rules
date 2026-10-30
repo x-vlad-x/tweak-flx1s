@@ -2,3 +2,7 @@
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_installsystemduser:
+	dh_installsystemduser -Xtweak-flx1s-offline-pause.service -Xtweak-flx1s-ringtone.service
+	dh_installsystemduser --no-enable tweak-flx1s-offline-pause.service tweak-flx1s-ringtone.service

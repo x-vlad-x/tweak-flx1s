@@ -29,7 +29,7 @@ from tweak_flx1s.system.sounds import SoundManager
 from tweak_flx1s.gui.dialogs import ExecutionDialog
 from tweak_flx1s.gui.weather_dialog import WeatherDialog
 from tweak_flx1s.core.datamonitor import DataMonitor
-from tweak_flx1s.const import SERVICE_OFFLINE_PAUSE
+from tweak_flx1s.const import SERVICE_OFFLINE_PAUSE, SERVICE_RINGTONE
 
 class BypassDialog(Adw.MessageDialog):
     def __init__(self, parent, callback):
@@ -115,6 +115,17 @@ class TweaksPage(Adw.PreferencesPage):
 
         sound_group = Adw.PreferencesGroup(title="Audio")
         self.add(sound_group)
+
+        self._add_service_row(sound_group, "Independent Ringtone Volume",
+                              "Set call volume independently of music and video", SERVICE_RINGTONE)
+        ringtone_row = Adw.ActionRow(title="Ringtone Volume", subtitle="Adjust volume and test the ringtone")
+        ringtone_button = Gtk.Button(label="Configure", valign=Gtk.Align.CENTER)
+        def open_ringtone(button):
+            from tweak_flx1s.gui.ringtone_dialog import RingtoneDialog
+            RingtoneDialog(self.window).present()
+        ringtone_button.connect("clicked", open_ringtone)
+        ringtone_row.add_suffix(ringtone_button)
+        sound_group.add(ringtone_row)
 
         sound_row = Adw.SwitchRow(title="Custom Sound Theme", subtitle="Use fastflx1 custom sounds")
         sound_row.set_active(self.sounds.is_custom_theme_active())
@@ -310,6 +321,21 @@ class TweaksPage(Adw.PreferencesPage):
         def run_tweak_service_toggle():
             try:
                 if should_be_active:
+                    legacy = {SERVICE_OFFLINE_PAUSE: "offline-pause.service",
+                              SERVICE_RINGTONE: "ringtone-volume.service"}.get(service)
+                    if legacy and subprocess.run(
+                            ["systemctl", "--user", "is-active", "--quiet", legacy],
+                            capture_output=True, timeout=10).returncode == 0:
+                        def show_conflict():
+                            dialog = Adw.MessageDialog(
+                                transient_for=self.window, heading="Standalone Service Is Running",
+                                body="Stop the standalone version before enabling the integrated service. "
+                                     "See /usr/share/doc/tweak-flx1s/.")
+                            dialog.add_response("ok", "OK")
+                            dialog.present()
+                            return False
+                        GLib.idle_add(show_conflict)
+                        return
                     run_command(f"systemctl --user enable {service}")
                     run_command("systemctl --user daemon-reload")
                     run_command(f"systemctl --user start {service}")
@@ -320,8 +346,9 @@ class TweaksPage(Adw.PreferencesPage):
             except Exception as e:
                 logger.error(f"Failed to toggle service {service}: {e}")
 
-            is_ok = self._is_service_active_and_enabled(service)
-            GLib.idle_add(lambda: self._sync_switch_state(row, is_ok))
+            finally:
+                is_ok = self._is_service_active_and_enabled(service)
+                GLib.idle_add(lambda: self._sync_switch_state(row, is_ok))
 
         threading.Thread(target=run_tweak_service_toggle, daemon=True).start()
 

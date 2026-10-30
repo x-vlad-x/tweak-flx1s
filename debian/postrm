@@ -19,6 +19,7 @@ if [ "$1" = "remove" ]; then
         rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-gestures.service"
         rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-datamonitor.service"
         rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-offline-pause.service"
+        rm -f "$TARGET_HOME/.config/systemd/user/default.target.wants/tweak-flx1s-ringtone.service"
 
         if [ -d "$XDG_RUNTIME_DIR" ]; then
              runuser -u "$TARGET_USER" -- systemctl --user daemon-reload 2>/dev/null || true

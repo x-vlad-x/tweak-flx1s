@@ -17,8 +17,10 @@ if [ "$1" = "remove" ]; then
 
             runuser -u "$TARGET_USER" -- systemctl --user stop tweak-flx1s-datamonitor.service 2>/dev/null || true
             runuser -u "$TARGET_USER" -- systemctl --user stop tweak-flx1s-offline-pause.service 2>/dev/null || true
+            runuser -u "$TARGET_USER" -- systemctl --user stop tweak-flx1s-ringtone.service 2>/dev/null || true
             runuser -u "$TARGET_USER" -- systemctl --user disable tweak-flx1s-datamonitor.service 2>/dev/null || true
             runuser -u "$TARGET_USER" -- systemctl --user disable tweak-flx1s-offline-pause.service 2>/dev/null || true
+            runuser -u "$TARGET_USER" -- systemctl --user disable tweak-flx1s-ringtone.service 2>/dev/null || true
         fi
     fi
 fi
